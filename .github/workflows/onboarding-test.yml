@@ -32,7 +32,5 @@ jobs:
 
       - name: Run basic health checks
         working-directory: ./airweave
-        env:
-          AIRWEAVE_TEST_ENV: onboarding
         run: |
-          docker exec airweave-backend pytest tests/e2e/smoke/test_basic_health.py -v
+          docker exec -e AIRWEAVE_TEST_ENV=onboarding airweave-backend pytest tests/e2e/smoke/test_basic_health.py -v
