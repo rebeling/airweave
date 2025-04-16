@@ -5,7 +5,7 @@ on:
     branches: [main]
   push:
     branches:
-      - feat/user_onboarding_test_in_CI
+      - feat/user_onboarding_test_in_CI # TODO delete rule
 
 jobs:
   test-onboarding:
@@ -19,6 +19,7 @@ jobs:
           echo "Docker Compose version:"
           docker compose version
 
+      # TODO: change to main branch
       - name: Clone repository
         run: |
           git clone -b feat/user_onboarding_test_in_CI https://github.com/marc-rutzou/airweave.git
