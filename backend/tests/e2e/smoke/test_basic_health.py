@@ -9,7 +9,7 @@ import pytest
 import requests
 
 
-def test_backend_health(test_environment, e2e_environment):
+def test_backend_health(test_environment):
     """Test that the backend API is healthy and responding."""
     health_url = f"{test_environment['backend_url']}/health"
 
