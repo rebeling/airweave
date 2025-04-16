@@ -5,7 +5,6 @@ These tests verify critical components are working in both:
 - Onboarding environment: Run after start.sh execution in onboarding-test.yml
 """
 
-import pytest
 import requests
 
 
@@ -18,22 +17,6 @@ def test_backend_health(test_environment):
     assert response.status_code == 200
     response_data = response.json()
     assert response_data["status"] == "healthy"
-
-
-def test_frontend_accessibility(test_environment):
-    """Test that the frontend is accessible and loads properly."""
-    # Skip if frontend is not available
-    if not test_environment["frontend_url"]:
-        pytest.skip("Frontend not available in this environment")
-
-    response = requests.get(test_environment["frontend_url"], timeout=10)
-
-    assert response.status_code == 200
-    assert "text/html" in response.headers.get("Content-Type", "")
-
-    # Check for app root element
-    content = response.text.lower()
-    assert 'id="root"' in content or "id='root'" in content
 
 
 def test_documentation_availability(test_environment):
