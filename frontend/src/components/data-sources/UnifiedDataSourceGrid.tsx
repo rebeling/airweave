@@ -6,6 +6,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { apiClient } from "@/lib/api";
 import { UnifiedDataSourceCard } from "./UnifiedDataSourceCard";
 import { Connection } from "@/types";
+import { AddSourceWizard } from "@/components/sync/AddSourceWizard";
+import { toast } from "sonner";
+import { DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 interface Source {
   id: string;
@@ -60,6 +63,16 @@ export function UnifiedDataSourceGrid({
   const [activeSourceForDialog, setActiveSourceForDialog] = useState<Source | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const [sourceForWizard, setSourceForWizard] = useState<{
+    shortName: string;
+    name: string;
+  } | null>(null);
+  const [wizardOpen, setWizardOpen] = useState(false);
+  const [addSourceOpen, setAddSourceOpen] = useState(false);
+  const [selectedSource, setSelectedSource] = useState<{
+    name: string;
+    short_name: string;
+  } | null>(null);
 
   const { toast } = useToast();
 
@@ -67,7 +80,20 @@ export function UnifiedDataSourceGrid({
    * Handle initiating a connection
    */
   const handleInitiateConnection = useCallback(async (source: Source) => {
-    if (source.auth_type === "none" || source.auth_type?.startsWith("basic") || source.auth_type?.startsWith("api_key")) {
+    console.log("🔄 handleInitiateConnection called with auth_type:", source.auth_type);
+
+    // Handle config_class and api_key directly with AddSourceWizard
+    if (source.auth_type === "config_class" || source.auth_type === "api_key") {
+      console.log("⭐ Using direct AddSourceWizard for config_class/api_key");
+      setSelectedSource({
+        name: source.name,
+        short_name: source.short_name
+      });
+      setAddSourceOpen(true);
+      return;
+    }
+
+    if (source.auth_type === "none" || source.auth_type?.startsWith("basic")) {
       // Open dialog for manual configuration
       setActiveSourceForDialog(source);
       setDialogOpen(true);
@@ -101,7 +127,7 @@ export function UnifiedDataSourceGrid({
       setActiveSourceForDialog(source);
       setDialogOpen(true);
     }
-  }, [handleOAuth, toast, setActiveSourceForDialog, setDialogOpen]);
+  }, [handleOAuth, toast, setActiveSourceForDialog, setDialogOpen, setSelectedSource, setAddSourceOpen]);
 
   const fetchSources = async () => {
     try {
@@ -157,8 +183,10 @@ export function UnifiedDataSourceGrid({
   useEffect(() => {
     // Add event listener for custom connection initiation
     const handleInitiateConnectionEvent = (event: CustomEvent) => {
+      console.log("🔔 Custom event received:", event.detail);
       const { source } = event.detail;
       if (source) {
+        console.log("🔍 Source data:", source);
         handleInitiateConnection(source);
       }
     };
@@ -257,6 +285,30 @@ export function UnifiedDataSourceGrid({
       return a.name.localeCompare(b.name);
     });
 
+  // Function to handle connection creation success
+  const handleConnectionCreated = () => {
+    console.log("✅ [Sources] Connection created");
+    toast({
+      title: "Connection created successfully"
+    });
+    // Refresh the page or fetch connections again
+    window.location.reload();
+  };
+
+  // Add this useEffect to clean up the wizard state
+  useEffect(() => {
+    // Clean up when unmounting or when addSourceOpen changes to false
+    if (!addSourceOpen) {
+      // Small delay to avoid state updates during render
+      const timer = setTimeout(() => {
+        if (!addSourceOpen) {
+          setSelectedSource(null);
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [addSourceOpen]);
+
   return (
     <div className="space-y-6">
       <div className="relative">
@@ -319,7 +371,20 @@ export function UnifiedDataSourceGrid({
                   mode={mode}
                   onInfoClick={undefined} // Implement if needed
                   onSelect={mode === "select" ? (connectionId) => handleSelectConnection(connectionId, source) : undefined}
-                  onAddConnection={() => handleInitiateConnection(source)}
+                  onAddConnection={() => {
+                    console.log("📣 Adding connection for:", source.short_name);
+                    // For API key auth types, open wizard directly
+                    if (source.auth_type === "api_key" || source.auth_type === "config_class") {
+                      setSelectedSource({
+                        name: source.name,
+                        short_name: source.short_name
+                      });
+                      setAddSourceOpen(true);
+                    } else {
+                      // Use the standard flow for other auth types
+                      handleInitiateConnection(source);
+                    }
+                  }}
                   onManage={mode === "manage" ? () => handleManageSource(source) : undefined}
                   renderDialogs={undefined} // Handled at the grid level
                 />
@@ -338,6 +403,17 @@ export function UnifiedDataSourceGrid({
           isOpen: dialogOpen,
           onOpenChange: setDialogOpen
         }
+      )}
+
+      {/* Render AddSourceWizard directly */}
+      {selectedSource && (
+        <AddSourceWizard
+          open={addSourceOpen}
+          onOpenChange={setAddSourceOpen}
+          onComplete={handleConnectionCreated}
+          shortName={selectedSource.short_name}
+          name={selectedSource.name}
+        />
       )}
     </div>
   );
