@@ -35,4 +35,4 @@ jobs:
         env:
           AIRWEAVE_TEST_ENV: onboarding
         run: |
-          docker exec airweave-backend-1 pytest tests/e2e/smoke/test_basic_health.py -v
+          docker exec airweave-backend pytest tests/e2e/smoke/test_basic_health.py -v
