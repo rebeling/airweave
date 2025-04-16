@@ -30,7 +30,12 @@ jobs:
           chmod +x start.sh
           { echo "y"; echo "${{ secrets.OPENAI_API_KEY }}"; } | ./start.sh
 
-      - name: Run basic health checks
+      - name: Run backend-specific health checks
         working-directory: ./airweave
         run: |
-          docker exec -e AIRWEAVE_TEST_ENV=onboarding airweave-backend pytest tests/e2e/smoke/test_basic_health.py -v
+          docker exec -e AIRWEAVE_TEST_ENV=onboarding airweave-backend pytest tests/e2e/smoke/test_basic_health.py::test_backend_health tests/e2e/smoke/test_basic_health.py::test_documentation_availability -v
+
+      - name: Run frontend-specific health checks
+        working-directory: ./airweave
+        run: |
+          docker exec -e AIRWEAVE_TEST_ENV=onboarding airweave-frontend pytest tests/e2e/smoke/test_basic_health.py::test_frontend_accessibility -v
