@@ -12,26 +12,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-
-      - name: Set up Node.js 20
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-
       - name: Verify prerequisites
         run: |
           echo "Docker version:"
           docker --version
           echo "Docker Compose version:"
           docker compose version
-          echo "Python version:"
-          python --version
-          echo "Node.js version:"
-          node --version
 
       - name: Clone repository
         run: |
@@ -41,4 +27,12 @@ jobs:
       - name: Run start script
         working-directory: ./airweave
         run: |
+          chmod +x start.sh
           { echo "y"; echo "${{ secrets.OPENAI_API_KEY }}"; } | ./start.sh
+
+      - name: Run basic health checks
+        working-directory: ./airweave
+        env:
+          AIRWEAVE_TEST_ENV: onboarding
+        run: |
+          python -m pytest backend/tests/e2e/smoke/test_basic_health.py -v

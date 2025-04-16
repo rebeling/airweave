@@ -1,54 +1,45 @@
-"""Basic smoke test for the Airweave API.
+"""Health check tests for Airweave.
 
-This test verifies that the API is accessible and returns expected responses.
+These tests verify critical components are working in both:
+- Test environment: Run by GitHub Actions during backend tests.yml
+- Onboarding environment: Run after start.sh execution in onboarding-test.yml
 """
 
 import pytest
 import requests
 
-from tests.e2e.runner import E2ETestRunner
 
+def test_backend_health(test_environment, e2e_environment):
+    """Test that the backend API is healthy and responding."""
+    health_url = f"{test_environment['backend_url']}/health"
 
-# Set up and tear down the E2E test environment once for all tests in this module
-@pytest.fixture(scope="module")
-def e2e_environment():
-    """Set up and tear down the E2E test environment."""
-    # Skip this test when running unit or integration tests
-    runner = E2ETestRunner()
-    try:
-        runner.setup()
-        yield runner
-    finally:
-        runner.teardown()
+    response = requests.get(health_url, timeout=10)
 
-
-def test_health_endpoint(e2e_environment):
-    """Test that the health endpoint returns a 200 status code."""
-    # Arrange
-    health_url = "http://localhost:9001/health"
-
-    # Act
-    response = requests.get(health_url)
-
-    # Assert
     assert response.status_code == 200
-
-    # Check response body
     response_data = response.json()
     assert response_data["status"] == "healthy"
 
 
-def test_api_docs_accessible(e2e_environment):
-    """Test that the API documentation is accessible."""
-    # Arrange
-    docs_url = "http://localhost:9001/docs"
+def test_frontend_accessibility(test_environment):
+    """Test that the frontend is accessible and loads properly."""
+    # Skip if frontend is not available
+    if not test_environment["frontend_url"]:
+        pytest.skip("Frontend not available in this environment")
 
-    # Act
-    response = requests.get(docs_url)
+    response = requests.get(test_environment["frontend_url"], timeout=10)
 
-    # Assert
     assert response.status_code == 200
-    assert "text/html" in response.headers["Content-Type"]
+    assert "text/html" in response.headers.get("Content-Type", "")
 
-    # Check for Swagger UI content
+    # Check for app root element
+    content = response.text.lower()
+    assert 'id="root"' in content or "id='root'" in content
+
+
+def test_documentation_availability(test_environment):
+    """Test that documentation is accessible for users."""
+    # Test API docs
+    api_docs_url = f"{test_environment['backend_url']}/docs"
+    response = requests.get(api_docs_url, timeout=10)
+    assert response.status_code == 200
     assert "swagger-ui" in response.text.lower()
