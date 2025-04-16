@@ -21,7 +21,7 @@ jobs:
 
       - name: Clone repository
         run: |
-          git clone https://github.com/airweave-ai/airweave.git
+          git clone -b feat/user_onboarding_test_in_CI https://github.com/marc-rutzou/airweave.git
           cd airweave
 
       - name: Run start script
