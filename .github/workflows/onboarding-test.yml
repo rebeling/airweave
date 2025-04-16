@@ -6,7 +6,6 @@ on:
   push:
     branches:
       - feat/user_onboarding_test_in_CI
-  workflow_dispatch: {} # Allows manual triggering
 
 jobs:
   test-onboarding:
@@ -38,3 +37,8 @@ jobs:
         run: |
           git clone https://github.com/airweave-ai/airweave.git
           cd airweave
+
+      - name: Run start script
+        working-directory: ./airweave
+        run: |
+          { echo "y"; echo "${{ secrets.OPENAI_API_KEY }}"; } | ./start.sh
