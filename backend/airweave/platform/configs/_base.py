@@ -1,6 +1,6 @@
 """Base config class."""
 
-from typing import Optional
+from typing import Optional, get_args, get_origin
 
 from pydantic import BaseModel
 
@@ -33,12 +33,24 @@ class Fields(BaseModel):
         """Create fields from config class."""
         fields = []
         for field_name, field_info in config_class.model_fields.items():
+            # Get the actual type, handling Optional types
+            annotation = field_info.annotation
+            if get_origin(annotation) is Optional:
+                annotation = get_args(annotation)[0]
+
+            # Get the base type if it's a Field
+            if hasattr(annotation, "__origin__"):
+                annotation = annotation.__origin__
+
+            # Map the type to string representation
+            type_str = _type_map.get(annotation, "string")  # Default to string if type not found
+
             fields.append(
                 ConfigField(
                     name=field_name,
-                    title=field_info.title,
+                    title=field_info.title or field_name,
                     description=field_info.description,
-                    type=_type_map[field_info.annotation],
+                    type=type_str,
                 )
             )
         return Fields(fields=fields)
