@@ -9,29 +9,29 @@ jobs:
   test-onboarding:
     runs-on: ubuntu-latest
 
-  steps:
-    - name: Set up Python 3.11
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
+    steps:
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
 
-    - name: Set up Node.js 20
-      uses: actions/setup-node@v3
-      with:
-        node-version: '20'
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
 
-    - name: Verify prerequisites
-      run: |
-        echo "Docker version:"
-        docker --version
-        echo "Docker Compose version:"
-        docker compose version
-        echo "Python version:"
-        python --version
-        echo "Node.js version:"
-        node --version
+      - name: Verify prerequisites
+        run: |
+          echo "Docker version:"
+          docker --version
+          echo "Docker Compose version:"
+          docker compose version
+          echo "Python version:"
+          python --version
+          echo "Node.js version:"
+          node --version
 
-    - name: Clone repository
-      run: |
-        git clone https://github.com/airweave-ai/airweave.git
-        cd airweave
+      - name: Clone repository
+        run: |
+          git clone https://github.com/airweave-ai/airweave.git
+          cd airweave
