@@ -49,3 +49,10 @@ jobs:
             echo "Frontend test failed: HTTP status $HTTP_STATUS"
             exit 1
           fi
+
+      - name: Run user onboarding test
+        working-directory: ./airweave
+        env:
+          STRIPE_API_KEY: ${{ secrets.STRIPE_API_KEY }}
+        run: |
+          docker exec -e STRIPE_API_KEY=${STRIPE_API_KEY} -e AIRWEAVE_TEST_ENV=onboarding airweave-backend pytest tests/e2e/smoke/test_user_onboarding.py -v
