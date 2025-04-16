@@ -1,8 +1,8 @@
 name: User Onboarding Test
 
 on:
-  pull_request_target: # Need access to secrets
-    branches: [main]
+  # pull_request_target: # Need access to secrets
+  #   branches: [main]
   workflow_dispatch: {} # Allows manual triggering
 
 jobs:
