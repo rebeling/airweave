@@ -60,6 +60,7 @@ async def file_chunker(file: FileEntity) -> list[ParentEntity | ChunkEntity]:
             chunk = FileChunkClass(
                 name=f"{file.name} - Chunk {i + 1}",
                 entity_id=file.entity_id,
+                sync_id=file.sync_id,
                 parent_entity_id=parent.entity_id,
                 parent_db_entity_id=parent.db_entity_id,
                 md_content=chunk,
