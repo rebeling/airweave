@@ -73,7 +73,7 @@ class Connection(Base):
         # except for the specific native connections
         CheckConstraint(
             """
-            (short_name IN ('weaviate_native', 'neo4j_native', 'local_text2vec'))
+            (short_name IN ('qdrant_native', 'neo4j_native', 'local_text2vec'))
             OR
             (organization_id IS NOT NULL
              AND created_by_email IS NOT NULL

@@ -1,6 +1,6 @@
 import { z } from "zod"; // We'll use zod for runtime validation if needed
 
-export interface SyncBase {
+interface SyncBase {
   name: string;
   description?: string | null;
   sourceConnectionId: string; // UUID
@@ -28,7 +28,7 @@ interface SyncUpdate {
   syncMetadata?: Record<string, any>;
 }
 
-export interface SyncInDB extends SyncBase {
+interface SyncInDB extends SyncBase {
   id: string; // UUID
   organizationId: string; // UUID
   createdAt: string; // ISO datetime
@@ -60,13 +60,13 @@ const syncSchema = z.object({
 });
 
 // Additional interfaces for the UI components
-export interface SyncSource {
+interface SyncSource {
   name: string;
   shortName: string;
   type: string;
 }
 
-export interface SyncDestination {
+interface SyncDestination {
   name: string;
   shortName: string;
   type: string;

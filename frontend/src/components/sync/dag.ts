@@ -1,6 +1,6 @@
 import { Node, Edge, Position, addEdge } from 'reactflow';
 
-export interface DagNode {
+interface DagNode {
   id: string;
   type: 'SOURCE' | 'DESTINATION' | 'ENTITY' | 'TRANSFORMER';
   name: string;
@@ -10,7 +10,7 @@ export interface DagNode {
   entity_definition_id?: string;
 }
 
-export interface DagEdge {
+interface DagEdge {
   id: string;
   from_node_id: string;
   to_node_id: string;

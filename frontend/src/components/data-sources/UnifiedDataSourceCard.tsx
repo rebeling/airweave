@@ -20,7 +20,7 @@ import { useTheme } from "@/lib/theme-provider";
 import { Connection } from "@/types";
 import { LabelBadge } from "./LabelBadge";
 
-export interface UnifiedDataSourceCardProps {
+interface UnifiedDataSourceCardProps {
   shortName: string;
   name: string;
   description: string;

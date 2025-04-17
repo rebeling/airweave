@@ -148,8 +148,8 @@ const ViewEditSync = () => {
           const destination = await apiClient.get(`/destinations/detail/${destConnectionData.short_name}`);
           destinationData = await destination.json();
         } else {
-          // native weaviate
-          const destination = await apiClient.get(`/destinations/detail/weaviate_native`);
+          // native qdrant
+          const destination = await apiClient.get(`/destinations/detail/qdrant_native`);
           destinationData = await destination.json();
         }
 
@@ -178,7 +178,7 @@ const ViewEditSync = () => {
             destination: {
               type: destination.integration_type?.toLowerCase() ?? 'Destination',
               name: destination.name ?? 'Native Airweave',
-              shortName: destination.short_name ?? ( destinationData.short_name === 'weaviate_native' ? 'Native' : 'unknown')
+              shortName: destination.short_name ?? ( destinationData.short_name === 'qdrant_native' ? 'Native' : 'unknown')
             },
             userId: syncData.created_by_email,
             organizationId: syncData.organization_id,

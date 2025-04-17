@@ -153,8 +153,8 @@ export const DestinationSelector = ({ onComplete }: DestinationSelectorProps) =>
         isNative: true
       },
       {
-        name: "Native Weaviate",
-        shortName: "weaviate_native"
+        name: "Native Qdrant",
+        shortName: "qdrant_native"
       }
     );
   };
@@ -208,7 +208,7 @@ export const DestinationSelector = ({ onComplete }: DestinationSelectorProps) =>
   const renderNativeInstances = () => {
     return (
       <div className="grid gap-4 sm:grid-cols-2 max-w-2xl">
-        {/* Weaviate Native - Actually selected */}
+        {/* Qdrant Native - Actually selected */}
         <Card
           className="flex flex-col justify-between border-primary border-2 bg-gradient-to-br from-background to-muted/50"
         >
@@ -216,12 +216,12 @@ export const DestinationSelector = ({ onComplete }: DestinationSelectorProps) =>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <img
-                  src={getDestinationIconUrl("weaviate_native")}
-                  alt="Weaviate icon"
+                  src={getDestinationIconUrl("qdrant")}
+                  alt="Qdrant icon"
                   className="w-8 h-8"
                 />
                 <div>
-                  <CardTitle>Native Weaviate</CardTitle>
+                  <CardTitle>Native Qdrant</CardTitle>
                   <CardDescription>Built-in vector database</CardDescription>
                 </div>
               </div>
@@ -230,43 +230,7 @@ export const DestinationSelector = ({ onComplete }: DestinationSelectorProps) =>
           </CardHeader>
           <CardContent className="flex-grow">
             <p className="text-sm text-muted-foreground">
-              Use the built-in Weaviate instance for optimal performance and seamless integration.
-            </p>
-          </CardContent>
-          <CardFooter>
-            <Button
-              className="w-full"
-              variant="default"
-              disabled
-            >
-              Selected
-            </Button>
-          </CardFooter>
-        </Card>
-
-        {/* Neo4j Native - Visually selected but not in state */}
-        <Card
-          className="flex flex-col justify-between border-primary border-2 bg-gradient-to-br from-background to-muted/50"
-        >
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <img
-                  src={getDestinationIconUrl("neo4j_native")}
-                  alt="Neo4j icon"
-                  className="w-8 h-8"
-                />
-                <div>
-                  <CardTitle>Native Neo4j</CardTitle>
-                  <CardDescription>Built-in graph database</CardDescription>
-                </div>
-              </div>
-              <Check className="h-5 w-5 text-primary" />
-            </div>
-          </CardHeader>
-          <CardContent className="flex-grow">
-            <p className="text-sm text-muted-foreground">
-              Use the built-in Neo4j instance for graph relationships and seamless integration.
+              Use the built-in Qdrant instance for optimal performance and seamless integration.
             </p>
           </CardContent>
           <CardFooter>
@@ -288,7 +252,7 @@ export const DestinationSelector = ({ onComplete }: DestinationSelectorProps) =>
    */
   const renderDestinationGroup = (dest: DestinationDetails) => {
     // Skip native instances as they're rendered separately
-    if (dest.short_name === "weaviate_native" || dest.short_name === "neo4j_native") return null;
+    if (dest.short_name === "qdrant_native" || dest.short_name === "neo4j_native") return null;
 
     const destConnections = connections
       .filter((c) => c.short_name === dest.short_name)

@@ -1,7 +1,7 @@
 import { ComponentType } from "react";
 
 
-export enum AuthType {
+enum AuthType {
   OAUTH2 = "oauth2",
   OAUTH2_WITH_REFRESH = "oauth2_with_refresh",
   OAUTH2_WITH_REFRESH_ROTATING = "oauth2_with_refresh_rotating",
@@ -10,7 +10,7 @@ export enum AuthType {
   NATIVE_FUNCTIONALITY = "native_functionality",
   CONFIG_CLASS = "config_class"
 }
-export interface DataSource {
+interface DataSource {
   id: string;
   name: string;
   description: string;

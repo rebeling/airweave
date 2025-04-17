@@ -25,8 +25,8 @@ backend/app/platform
     │   ├── slack.py
     │   └── ghibli.py # See example implementation below
     └── destinations/
-        └── weaviate.py
-        └── weaviate_native.py
+        └── qdrant.py
+        └── qdrant_native.py
         └── pinecone.py
         └── custom.py # See example implementation below
     ... # Other platform modules
@@ -266,7 +266,7 @@ The `destinations` directory contains implementations for different storage syst
 ```
 destinations/
 ├── vector_stores/
-│   ├── weaviate.py
+│   ├── qdrant.py
 │   └── pinecone.py
 ├── search/
 │   └── elasticsearch.py

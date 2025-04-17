@@ -7,7 +7,7 @@ export interface ModelSettings {
   search_type?: string;
 }
 
-export interface SourceConnection {
+interface SourceConnection {
   id: string;
   name: string;
   type: string;
@@ -15,7 +15,7 @@ export interface SourceConnection {
   status: string;
 }
 
-export interface ChatMessage {
+interface ChatMessage {
   id: string;
   chat_id: string;
   content: string;
@@ -37,7 +37,7 @@ interface Chat {
   source_connection?: SourceConnection;
 }
 
-export interface Connection {
+interface Connection {
   id: string;
   name: string;
   short_name: string;
@@ -46,7 +46,7 @@ export interface Connection {
   destination?: Destination;
 }
 
-export interface Sync {
+interface Sync {
   id: string;
   name: string;
   description?: string;
@@ -73,14 +73,14 @@ export interface ChatInfoSidebarProps {
   className?: string;
 }
 
-export interface Source {
+interface Source {
   id: string;
   name: string;
   short_name: string;
   app_url?: string;
 }
 
-export interface Destination {
+interface Destination {
   id: string;
   name: string;
   short_name: string;

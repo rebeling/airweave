@@ -30,7 +30,7 @@ const LABEL_COLORS: Record<string, { bg: string; text: string; border: string }>
   "Marketing": { bg: "bg-amber-500/5", text: "text-amber-600/60", border: "border-amber-500/20" },
 };
 
-export interface LabelBadgeProps {
+interface LabelBadgeProps {
   label: string;
   className?: string;
 }

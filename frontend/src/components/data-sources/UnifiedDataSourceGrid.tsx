@@ -17,7 +17,7 @@ interface Source {
   output_entity_definition_ids?: string[]; // This will be used for entity count
 }
 
-export interface UnifiedDataSourceGridProps {
+interface UnifiedDataSourceGridProps {
   // Mode configuration
   mode: "select" | "manage";
 

@@ -48,7 +48,7 @@ class SearchService:
                 raise NotFoundException("No destination connections found for this sync")
 
             # TODO: In the future, implement multi-destination search capability,
-            # e.g., neo4j + weaviate for GraphRAG.
+            # e.g., neo4j + qdrant for GraphRAG.
             # Currently, we only use the first destination for searching, but eventually
             # we should support searching across all destinations and aggregating results
             destination_connection_id = sync.destination_connection_ids[0]
