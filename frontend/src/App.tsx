@@ -9,7 +9,6 @@ import { NotFound } from "@/pages/NotFound";
 import SyncCreate from "@/pages/SyncCreate";
 import SyncTableView from "@/pages/SyncTableView";
 import ViewEditSync from "@/pages/ViewEditSync";
-import ViewEditWhiteLabelSync from "@/pages/ViewEditWhiteLabelSync";
 import Destinations from "@/pages/Destinations";
 import Profile from "@/pages/Profile";
 import Chat from "@/pages/Chat";
@@ -28,7 +27,6 @@ function App() {
           <Route path="/sync">
             <Route index element={<SyncTableView />} />
             <Route path="create" element={<SyncCreate />} />
-            <Route path="white-label/:id" element={<ViewEditWhiteLabelSync />} />
             <Route path=":id" element={<ViewEditSync />} />
             <Route path=":id/job/:jobId" element={<ViewEditSync />} />
           </Route>

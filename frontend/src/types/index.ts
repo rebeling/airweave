@@ -17,7 +17,7 @@ export interface Connection {
   createdAt: string;
 }
 
-export interface DataSourceCardProps {
+interface DataSourceCardProps {
   shortName: string;
   name: string;
   description: string;

@@ -29,5 +29,4 @@ export const DiscordIcon: React.FC<DiscordIconProps> = ({
     </svg>
   );
 };
-
 export default DiscordIcon;

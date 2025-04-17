@@ -24,7 +24,7 @@ export interface ChatMessage {
   attachments?: string[];
 }
 
-export interface Chat {
+interface Chat {
   id: string;
   name: string;
   sync_id: string;

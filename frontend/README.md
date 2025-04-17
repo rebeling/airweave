@@ -1,69 +1,107 @@
-# Welcome to your Lovable project
+# Airweave Frontend
 
-## Project info
+## Overview
 
-**URL**: https://lovable.dev/projects/5a01b909-829a-4c52-b26c-04a26a07b4b0
+The Airweave frontend is a React/TypeScript application that provides the UI for the Airweave platform. Airweave is an open-source platform that makes any app searchable for your agent by syncing data from various sources into vector and graph databases with minimal configuration.
 
-## How can I edit this code?
+## Technology Stack
 
-There are several ways of editing your application.
+- **Framework**: React with TypeScript
+- **UI Components**: ShadCN UI components with Radix UI
+- **Styling**: Tailwind CSS
+- **Icons**: Lucide Icons
+- **Build Tool**: Vite
+- **Package Manager**: npm/bun
 
-**Use Lovable**
+## Getting Started
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/5a01b909-829a-4c52-b26c-04a26a07b4b0) and start prompting.
+### Prerequisites
 
-Changes made via Lovable will be committed automatically to this repo.
+- Node.js (v18+)
+- npm or bun
 
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+### Installation
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Clone the repository
+git clone https://github.com/airweave-ai/airweave
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Navigate to the frontend directory
+cd airweave/frontend
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+# Install dependencies
+npm install
+# or
+bun install
 ```
 
-**Edit a file directly in GitHub**
+### Development
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```sh
+# Start the development server
+npm run dev
+# or
+bun run dev
+```
 
-**Use GitHub Codespaces**
+This will start the development server at `http://localhost:5173` (or another port if 5173 is in use).
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Project Structure
 
-## What technologies are used for this project?
+```
+frontend/
+├── src/               # Source code
+│   ├── components/    # React components
+│   ├── config/        # Configuration
+│   ├── hooks/         # React hooks
+│   ├── lib/           # Utility libraries
+│   ├── pages/         # Page components
+│   ├── styles/        # CSS styles
+│   └── types/         # TypeScript type definitions
+├── public/            # Static assets
+└── ...
+```
 
-This project is built with .
+## API Integration
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+The frontend communicates with the backend API using the `apiClient`. When making API calls, use relative paths without prefixing with `api/v1`. The API client will handle the correct URL construction.
 
-## How can I deploy this project?
+```tsx
+// Example API call
+import { apiClient } from '@/lib/api';
 
-Simply open [Lovable](https://lovable.dev/projects/5a01b909-829a-4c52-b26c-04a26a07b4b0) and click on Share -> Publish.
+// Correct
+const response = await apiClient.get('/sources');
 
-## I want to use a custom domain - is that possible?
+// Incorrect
+const response = await apiClient.get('api/v1/sources');
+```
 
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+## Building for Production
+
+```sh
+# Build the frontend
+npm run build
+# or
+bun run build
+```
+
+The build artifacts will be stored in the `dist/` directory.
+
+## Contributing
+
+When contributing to the frontend:
+
+1. Follow the established patterns in the codebase
+2. Use existing components where possible
+3. Follow the TypeScript typing conventions
+4. Test your changes before submitting a PR
+
+## Docker
+
+A Dockerfile is included for containerizing the frontend. Build and run with:
+
+```sh
+docker build -t airweave-frontend .
+docker run -p 8080:80 airweave-frontend
+```

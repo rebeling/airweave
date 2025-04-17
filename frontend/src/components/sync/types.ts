@@ -12,11 +12,11 @@ export interface SyncBase {
   syncMetadata?: Record<string, any> | null;
 }
 
-export interface SyncCreate extends SyncBase {
+interface SyncCreate extends SyncBase {
   runImmediately?: boolean;
 }
 
-export interface SyncUpdate {
+interface SyncUpdate {
   name?: string;
   schedule?: string;
   sourceConnectionId?: string;
@@ -41,7 +41,7 @@ export interface SyncInDB extends SyncBase {
 export interface Sync extends SyncInDB {}
 
 // Optional: Zod schema for runtime validation
-export const syncSchema = z.object({
+const syncSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
   description: z.string().nullable().optional(),
