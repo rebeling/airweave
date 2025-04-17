@@ -11,7 +11,7 @@
 
 </div>
 
-Turn any app data into accessible searchable knowledge for AI agents. **Airweave** connects any app, database, URL, or API for agentic retrieval.
+Turn any app into a semantic MCP server for AI agents. **Airweave** connects any app, database, URL, or API and makes it semantically searchable for agents.
 
 ### 🎥 Demo
 https://github.com/user-attachments/assets/e6f80420-ad16-4844-b9be-30b1fbc2281c
