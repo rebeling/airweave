@@ -63,7 +63,7 @@ class CRUDBaseSystem(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return result.unique().scalar_one_or_none()
 
     async def get_all(
-        self, db: AsyncSession, *, skip: int = 0, limit: int = 100
+        self, db: AsyncSession, *, skip: int = 0, limit: int = 100, disable_limit: bool = True
     ) -> list[ModelType]:
         """Get multiple objects.
 
@@ -72,13 +72,18 @@ class CRUDBaseSystem(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             db (AsyncSession): The database session.
             skip (int): The number of objects to skip.
             limit (int): The number of objects to return.
+            disable_limit (bool): Disable the limit parameter by default.
 
         Returns:
         -------
             List[ModelType]: A list of objects.
 
         """
-        result = await db.execute(select(self.model).offset(skip).limit(limit))
+        query = select(self.model).offset(skip)
+        if not disable_limit:
+            query = query.limit(limit)
+
+        result = await db.execute(query)
         return list(result.unique().scalars().all())
 
     async def create(
@@ -197,13 +202,7 @@ class CRUDBaseSystem(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     async def sync(
         self, db: AsyncSession, items: list[CreateSchemaType], unique_field: str = "short_name"
     ) -> None:
-        """Sync items with the database.
-
-        Args:
-            db (AsyncSession): Database session
-            items (List[CreateSchemaType]): List of items to sync
-            unique_field (str, optional): Field to check for uniqueness. Defaults to "short_name".
-        """
+        """Sync items with the database."""
         # Create a dictionary of new items by their unique field
         new_items_dict = {getattr(item, unique_field): item for item in items}
 
