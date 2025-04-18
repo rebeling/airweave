@@ -55,4 +55,4 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           STRIPE_API_KEY: ${{ secrets.STRIPE_API_KEY }}
         run: |
-          docker exec -e STRIPE_API_KEY=${OPENAI_API_KEY} -e STRIPE_API_KEY=${STRIPE_API_KEY} -e AIRWEAVE_TEST_ENV=onboarding airweave-backend pytest tests/e2e/smoke/test_user_onboarding.py -sv
+          docker exec -e OPENAI_API_KEY=${OPENAI_API_KEY} -e STRIPE_API_KEY=${STRIPE_API_KEY} -e AIRWEAVE_TEST_ENV=onboarding airweave-backend pytest tests/e2e/smoke/test_user_onboarding.py -sv
