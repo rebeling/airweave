@@ -9,6 +9,7 @@ trap 'echo -e "\n🛑 Interrupted. Exiting..."; exit 1' INT
 echo -e "Starting the Airweave Engine..."
 
 # Create .env if it doesn't exist
+# Create .env if it doesn't exist
 [ -f .env ] || {
   echo -e "Creating .env from .env.example..."
   cp .env.example .env
@@ -29,7 +30,7 @@ OPENAI_KEY_VALUE="${OPENAI_KEY_LINE#*=}"
 if [[ -z "$OPENAI_KEY_VALUE" ]]; then
   echo -e "\nOpenAI API key is required for files and natural language search."
   echo -e "📝 You can add it later in your .env file manually."
-  read -p "Would you like to add your OPENAI_API_KEY now? (y/N): " ADD_KEY
+  read -p "Would you like to add your OPENAI_API_KEY now? (y/n): " ADD_KEY
 
   if [[ "$ADD_KEY" =~ ^[Yy]$ ]]; then
     read -p "Enter your OpenAI API key: " OPENAI_KEY
@@ -52,6 +53,34 @@ docker compose version >/dev/null 2>&1 || {
   }
 }
 
+# Add this block: Check if Docker daemon is running
+if ! docker info > /dev/null 2>&1; then
+  echo "Error: Docker daemon is not running. Please start Docker and try again."
+  exit 1
+fi
+
+# Check for existing airweave containers
+EXISTING_CONTAINERS=$(docker ps -a --filter "name=airweave" --format "{{.Names}}" | tr '\n' ' ')
+
+if [ -n "$EXISTING_CONTAINERS" ]; then
+  echo -e "Found existing airweave containers: $EXISTING_CONTAINERS"
+  read -p "Would you like to remove them before starting? (y/n): " REMOVE_CONTAINERS
+
+  if [ "$REMOVE_CONTAINERS" = "y" ] || [ "$REMOVE_CONTAINERS" = "Y" ]; then
+    echo -e "Removing existing containers..."
+    docker rm -f $EXISTING_CONTAINERS
+
+    # Also remove the database volume
+    echo -e "Removing database volume..."
+    docker volume rm airweave_postgres_data 2>/dev/null || true
+
+    echo -e "🧹 Containers and volumes removed."
+  else
+    echo -e "Warning: Starting with existing containers may cause conflicts."
+  fi
+fi
+
+# Now run the appropriate Docker Compose command
 echo -e "\n🚀 Starting services with: $COMPOSE_CMD"
 $COMPOSE_CMD up -d
 
