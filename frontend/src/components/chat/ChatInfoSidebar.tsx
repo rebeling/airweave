@@ -312,13 +312,13 @@ export function ChatInfoSidebar({ chatInfo, onUpdateSettings }: ChatInfoSidebarP
                         <div className="flex items-center gap-2">
                           <img
                             src={getDestinationIconUrl(
-                              chatInfo.sync.destination_connection?.short_name || "weaviate_native"
+                              chatInfo.sync.destination_connection?.short_name || "qdrant"
                             )}
-                            alt={chatInfo.sync.destination_connection?.destination?.name || "Native Weaviate"}
+                            alt={chatInfo.sync.destination_connection?.destination?.name || "Qdrant"}
                             className="h-5 w-5"
                           />
                           <span className="text-sm">
-                            {chatInfo.sync.destination_connection?.destination?.name || "Native Weaviate"}
+                            {chatInfo.sync.destination_connection?.destination?.name || "Native Qdrant"}
                           </span>
                         </div>
                         {chatInfo.sync.destination_connection && (
