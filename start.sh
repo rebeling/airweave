@@ -59,30 +59,6 @@ if ! docker info > /dev/null 2>&1; then
   exit 1
 fi
 
-<<<<<<< HEAD
-# Check for existing airweave containers
-EXISTING_CONTAINERS=$(docker ps -a --filter "name=airweave" --format "{{.Names}}" | tr '\n' ' ')
-
-if [ -n "$EXISTING_CONTAINERS" ]; then
-  echo -e "Found existing airweave containers: $EXISTING_CONTAINERS"
-  read -p "Would you like to remove them before starting? (y/n): " REMOVE_CONTAINERS
-
-  if [ "$REMOVE_CONTAINERS" = "y" ] || [ "$REMOVE_CONTAINERS" = "Y" ]; then
-    echo -e "Removing existing containers..."
-    docker rm -f $EXISTING_CONTAINERS
-
-    # Also remove the database volume
-    echo -e "Removing database volume..."
-    docker volume rm airweave_postgres_data 2>/dev/null || true
-
-    echo -e "🧹 Containers and volumes removed."
-  else
-    echo -e "Warning: Starting with existing containers may cause conflicts."
-  fi
-fi
-
-=======
->>>>>>> ce90c93 (Clean up startup script and add icons)
 # Check for existing airweave containers
 EXISTING_CONTAINERS=$(docker ps -a --filter "name=airweave" --format "{{.Names}}" | tr '\n' ' ')
 
