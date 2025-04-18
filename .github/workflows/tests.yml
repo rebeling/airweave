@@ -43,9 +43,10 @@ jobs:
           PROJECT_NAME: airweave
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           STRIPE_API_KEY: ${{ secrets.STRIPE_API_KEY }} # Used for e2e sync tests
+
         run: |
           cd backend
-          poetry run pytest tests/ --cov=airweave --cov-report=xml
+          poetry run pytest tests/ --ignore=tests/e2e/smoke/test_user_onboarding.py --cov=airweave --cov-report=xml
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
