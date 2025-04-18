@@ -52,3 +52,9 @@ paths:
   /dag/init:
     get:
       x-fern-ignore: true
+  /connections/direct-token/slack:
+    post:
+      x-fern-ignore: true
+  /connections/oauth2/source/auth_url:
+    get:
+      x-fern-ignore: true

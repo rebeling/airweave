@@ -17,6 +17,7 @@ repos:
       - id: ruff-format
         types_or: [python, pyi, jupyter]
         files: ^backend/
+        exclude: backend/tests
 
   - repo: local
     hooks:

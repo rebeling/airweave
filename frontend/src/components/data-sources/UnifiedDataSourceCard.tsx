@@ -19,6 +19,8 @@ import { useState, useEffect } from "react";
 import { useTheme } from "@/lib/theme-provider";
 import { Connection } from "@/types";
 import { LabelBadge } from "./LabelBadge";
+import { env } from "@/config/env";
+import { SlackTokenDialog } from "./SlackTokenDialog";
 
 interface UnifiedDataSourceCardProps {
   shortName: string;
@@ -71,11 +73,15 @@ export function UnifiedDataSourceCard({
 }: UnifiedDataSourceCardProps) {
   const [selectedConnectionId, setSelectedConnectionId] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
+  const [showTokenDialog, setShowTokenDialog] = useState(false);
   const { resolvedTheme } = useTheme();
   const activeConnections = connections.filter(conn => conn.status === "active");
   const mostRecentConnection = activeConnections.length > 0
     ? activeConnections.sort((a, b) => new Date(b.modified_at).getTime() - new Date(a.modified_at).getTime())[0]
     : null;
+
+  // Check if we're in local development mode and this is the Slack source
+  const isLocalSlack = env.VITE_LOCAL_DEVELOPMENT && shortName === "slack";
 
   useEffect(() => {
     if (mode === "select" && connections.length > 0) {
@@ -96,7 +102,11 @@ export function UnifiedDataSourceCard({
 
   const handleAddNewConnection = () => {
     setOpen(false);
-    if (onAddConnection) {
+
+    // For Slack in local development, show token dialog instead of OAuth flow
+    if (isLocalSlack) {
+      setShowTokenDialog(true);
+    } else if (onAddConnection) {
       onAddConnection();
     }
   };
@@ -104,6 +114,13 @@ export function UnifiedDataSourceCard({
   const handleManageSource = () => {
     if (onManage) {
       onManage();
+    }
+  };
+
+  const handleTokenSuccess = (connectionId: string) => {
+    setSelectedConnectionId(connectionId);
+    if (onSelect) {
+      onSelect(connectionId);
     }
   };
 
@@ -231,7 +248,9 @@ export function UnifiedDataSourceCard({
                       className="cursor-pointer"
                       onClick={handleAddNewConnection}
                     >
-                      <span className="font-medium text-primary">Add new connection</span>
+                      <span className="font-medium text-primary">
+                        {isLocalSlack ? "Add new token connection" : "Add new connection"}
+                      </span>
                     </DropdownMenuItem>
 
                     {connections.length > 0 && <DropdownMenuSeparator />}
@@ -270,7 +289,7 @@ export function UnifiedDataSourceCard({
                 onClick={handleAddNewConnection}
               >
                 <span className="text-sm truncate max-w-[240px]">
-                  + Add connection
+                  {isLocalSlack ? "+ Add token connection" : "+ Add connection"}
                 </span>
               </Button>
             )}
@@ -280,6 +299,15 @@ export function UnifiedDataSourceCard({
 
       {/* Render any dialogs/modals if provided */}
       {renderDialogs && renderDialogs()}
+
+      {/* Slack token dialog for local development */}
+      {isLocalSlack && (
+        <SlackTokenDialog
+          open={showTokenDialog}
+          onOpenChange={setShowTokenDialog}
+          onSuccess={handleTokenSuccess}
+        />
+      )}
     </>
   );
 }

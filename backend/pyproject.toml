@@ -84,7 +84,7 @@ check_untyped_defs = true
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-extend-exclude = ["alembic", "local.py", "fern/**"]
+extend-exclude = ["alembic", "local.py", "fern/**", "tests"]
 
 [tool.ruff.lint]
 select = [
