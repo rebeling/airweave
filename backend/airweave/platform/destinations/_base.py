@@ -62,10 +62,9 @@ class BaseDestination(ABC):
         pass
 
 
-class VectorDBDestination(BaseDestination, ABC):
+class VectorDBDestination(BaseDestination):
     """Base class for vector database destinations."""
 
-    @abstractmethod
     async def configure_for_embedding_model(self, embedding_model: BaseEmbeddingModel) -> None:
         """Configure the destination for a specific embedding model.
 
