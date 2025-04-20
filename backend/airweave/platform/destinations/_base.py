@@ -6,6 +6,7 @@ from typing import ClassVar, List
 from uuid import UUID
 
 from airweave import schemas
+from airweave.platform.embedding_models._base import BaseEmbeddingModel
 from airweave.platform.entities._base import ChunkEntity
 
 
@@ -61,14 +62,17 @@ class BaseDestination(ABC):
         pass
 
 
-class VectorDBDestination(BaseDestination):
-    """Abstract base class for destinations backed by a vector database.
+class VectorDBDestination(BaseDestination, ABC):
+    """Base class for vector database destinations."""
 
-    Inherits from BaseDestination and can have additional vector-specific methods if necessary.
-    """
+    @abstractmethod
+    async def configure_for_embedding_model(self, embedding_model: BaseEmbeddingModel) -> None:
+        """Configure the destination for a specific embedding model.
 
-    # For now, no additional abstract methods are defined here; it uses BaseDestination's interface.
-    pass
+        Args:
+            embedding_model: The embedding model to configure for
+        """
+        pass
 
 
 class GraphDBDestination(BaseDestination):
