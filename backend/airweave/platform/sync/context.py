@@ -261,7 +261,19 @@ class SyncContextFactory:
         current_user: schemas.User,
         embedding_model: BaseEmbeddingModel,
     ) -> list[BaseDestination]:
-        """Create destination instances."""
+        """Create destination instances.
+
+        Args:
+        -----
+            db (AsyncSession): The database session
+            sync (schemas.Sync): The sync object
+            current_user (schemas.User): The current user
+            embedding_model (BaseEmbeddingModel): The embedding model to use for vector destinations
+
+        Returns:
+        --------
+            list[BaseDestination]: A list of destination instances
+        """
         destinations = []
 
         for destination_connection_id in sync.destination_connection_ids:
