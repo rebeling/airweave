@@ -45,7 +45,7 @@ class ElasticsearchSource(BaseSource):
     async def create(cls, config: ElasticsearchAuthConfig) -> "ElasticsearchSource":
         """Create a new Elasticsearch source instance."""
         instance = cls()
-        instance.url = f"http://{config.host}:{config.port}"
+        instance.url = f"{config.host}:{config.port}"
         instance.api_key = getattr(config, "api_key", None)
         instance.indices = config.indices
         instance.fields = getattr(config, "fields", None)
