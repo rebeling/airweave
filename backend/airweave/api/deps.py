@@ -7,7 +7,7 @@ from fastapi_auth0 import Auth0User
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from airweave import crud, schemas
-from airweave.api.auth import auth0
+from airweave.api.auth import auth0, get_auth0_user_from_token
 from airweave.core.config import settings
 from airweave.core.exceptions import NotFoundException
 from airweave.core.logging import logger
@@ -94,8 +94,8 @@ async def get_user_from_token(token: str, db: AsyncSession) -> Optional[schemas.
         if token.startswith("Bearer "):
             token = token[7:]
 
-        # Get user ID from the token using the auth module
-        auth0_user = await auth0.get_user_from_token(token)
+        # Get the auth0 user from the token
+        auth0_user = await get_auth0_user_from_token(token)
         if not auth0_user:
             return None
 

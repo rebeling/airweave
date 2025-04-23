@@ -14,7 +14,7 @@ auth0 = Auth0(
 
 
 # Add a method to auth0 instance to verify tokens directly
-async def get_user_from_token(token: str):
+async def get_auth0_user_from_token(token: str):
     """Verify a token and return the Auth0User.
 
     Args:
@@ -61,7 +61,3 @@ async def get_user_from_token(token: str):
     except Exception as e:
         logging.error(f"Error verifying token: {e}")
         return None
-
-
-# Attach the method to the auth0 instance
-auth0.get_user_from_token = get_user_from_token

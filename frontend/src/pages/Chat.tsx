@@ -55,6 +55,12 @@ function Chat() {
   // Add a new state to track if chat is ready for messages
   const [chatReady, setChatReady] = useState(false);
 
+  // Add this right after the messages state declaration
+  // Add console logs to help debug messages
+  useEffect(() => {
+    console.log("Current messages:", messages);
+  }, [messages]);
+
   // Consolidate useEffects to reduce network calls on page refresh
   useEffect(() => {
     const checkOpenAIKeyAndInitChats = async () => {
@@ -121,15 +127,26 @@ function Chat() {
         }
 
         const chatData = await resp.json();
+        console.log("Chat data from API:", chatData);
 
-        // Set messages
-        const messages = chatData.messages || [];
-        setMessages(messages.map((m: any) => ({
-          role: m.role || 'user',
-          content: m.content,
-          attachments: m.attachments || [],
-          id: m.id || Date.now(),
-        })));
+        // Set messages - make sure we're handling the API response format correctly
+        const messagesFromAPI = chatData.messages || [];
+        console.log("Raw messages from API:", messagesFromAPI);
+
+        if (messagesFromAPI && Array.isArray(messagesFromAPI)) {
+          const formattedMessages = messagesFromAPI.map((m: any, index: number) => ({
+            role: m.role || 'user',
+            content: m.content || '',
+            attachments: m.attachments || [],
+            id: m.id || Date.now() + index, // Ensure unique IDs
+          }));
+
+          console.log("Formatted messages:", formattedMessages);
+          setMessages(formattedMessages);
+        } else {
+          console.error("Invalid messages format from API:", messagesFromAPI);
+          setMessages([]);
+        }
 
         // Load chat info in the same effect
         try {
@@ -237,22 +254,31 @@ function Chat() {
       }
 
       try {
-        // Add user message
-        const userMessage: Message = {
-          role: "user",
-          content,
-          id: Date.now(),
-          attachments: attachments
+        // Create a unique ID for the message
+        const messageId = Date.now();
+        console.log("Creating new user message with ID:", messageId);
+
+        // Add user message with explicit properties
+        const userMessage = {
+          role: "user" as const,
+          content: content,
+          id: messageId,
+          attachments: attachments || []
         };
+
+        console.log("Adding user message:", userMessage);
         setMessages(prev => [...prev, userMessage]);
 
-        // Create assistant message placeholder
-        const assistantMessage: Message = {
-          role: "assistant",
+        // Create assistant message placeholder with explicit properties
+        const assistantMessageId = messageId + 1;
+        const assistantMessage = {
+          role: "assistant" as const,
           content: "",
-          id: Date.now() + 1,
+          id: assistantMessageId,
           attachments: []
         };
+
+        console.log("Adding assistant placeholder:", assistantMessage);
         setMessages(prev => [...prev, assistantMessage]);
 
         // Send user message to backend
@@ -278,16 +304,26 @@ function Chat() {
             return;
           }
 
+          console.log("Received SSE data:", event.data);
+
           setMessages(prev => {
             const newMessages = [...prev];
-            const lastMessage = newMessages[newMessages.length - 1];
-            // Decode the escaped newlines
-            const decodedContent = event.data.replace(/\\n/g, '\n');
-            newMessages[newMessages.length - 1] = {
-              ...lastMessage,
-              content: lastMessage.content + decodedContent,
-              id: Date.now()
-            };
+            // Find the assistant message by ID
+            const assistantIndex = newMessages.findIndex(
+              m => m.role === "assistant" && m.id === assistantMessageId
+            );
+
+            if (assistantIndex !== -1) {
+              // Decode the escaped newlines
+              const decodedContent = event.data.replace(/\\n/g, '\n');
+              newMessages[assistantIndex] = {
+                ...newMessages[assistantIndex],
+                content: newMessages[assistantIndex].content + decodedContent,
+                id: assistantMessageId // Keep the same ID
+              };
+            } else {
+              console.warn("Could not find assistant message to update");
+            }
             return newMessages;
           });
         };
@@ -301,18 +337,17 @@ function Chat() {
             // Update the last message with an error notice
             setMessages(prev => {
               const newMessages = [...prev];
-              if (newMessages.length > 0) {
-                const lastMessage = newMessages[newMessages.length - 1];
-                if (lastMessage.role === 'assistant') {
-                  if (!lastMessage.content) {
-                    // Only update if we haven't received any content yet
-                    newMessages[newMessages.length - 1] = {
-                      ...lastMessage,
-                      content: "Failed to authenticate the streaming connection. Please try refreshing the page.",
-                      id: Date.now()
-                    };
-                  }
-                }
+              const assistantIndex = newMessages.findIndex(
+                m => m.role === "assistant" && m.id === assistantMessageId
+              );
+
+              if (assistantIndex !== -1 && !newMessages[assistantIndex].content) {
+                // Only update if we haven't received any content yet
+                newMessages[assistantIndex] = {
+                  ...newMessages[assistantIndex],
+                  content: "Failed to authenticate the streaming connection. Please try refreshing the page.",
+                  id: assistantMessageId // Keep the same ID
+                };
               }
               return newMessages;
             });
@@ -326,7 +361,7 @@ function Chat() {
         };
 
       } catch (error) {
-        console.error(error);
+        console.error("Error in handleSubmit:", error);
         toast({
           title: "Error",
           description: "Failed to get response",
@@ -437,32 +472,46 @@ function Chat() {
         ) : (
           <>
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              {messages.map((message, index) => (
-                <div key={message.id} className={cn(
-                  "flex",
-                  message.role === "user" ? "justify-end" : "justify-start"
-                )}>
-                  <div className={cn(
-                    "max-w-[80%]",
-                    message.role === "user" ? "ml-auto" : "mr-auto"
-                  )}>
-                    <ChatMessage
-                      role={message.role}
-                      content={message.content}
-                      attachments={message.attachments}
-                    />
-                  </div>
+              {messages.length === 0 && !isLoading && (
+                <div className="flex h-full items-center justify-center text-muted-foreground">
+                  <p>No messages yet. Start a conversation!</p>
                 </div>
-              ))}
+              )}
 
-              {isLoading && (
+              {messages.length > 0 && (
+                <div className="space-y-6">
+                  {messages.map((message, index) => (
+                    <div key={`${message.id || index}-${index}`} className={cn(
+                      "flex",
+                      message.role === "user" ? "justify-end" : "justify-start"
+                    )}>
+                      <div className={cn(
+                        "max-w-[80%]",
+                        message.role === "user" ? "ml-auto" : "mr-auto"
+                      )}>
+                        <ChatMessage
+                          role={message.role}
+                          content={message.content || ""}
+                          attachments={message.attachments}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {isLoading && messages.length === 0 && (
                 <div className="flex justify-center">
                   <Spinner className="h-6 w-6" />
                 </div>
               )}
             </div>
             <Card className="m-4 p-4">
-              <ChatInput onSubmit={handleSubmit} isLoading={isLoading} />
+              <ChatInput
+                onSubmit={handleSubmit}
+                isLoading={isLoading}
+                disabled={!chatReady || !chatId}
+              />
             </Card>
           </>
         )}
