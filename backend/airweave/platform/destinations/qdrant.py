@@ -356,7 +356,7 @@ class QdrantDestination(VectorDBDestination):
                 collection_name=self.collection_name,
                 query_vector=query_vector,
                 query_filter=qdrant_filter,
-                limit=10,
+                limit=25,
                 with_payload=True,
             )
 
