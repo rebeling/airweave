@@ -16,8 +16,8 @@ class User(OrganizationBase):
 
     __tablename__ = "user"
 
-    full_name: Mapped[str] = mapped_column(String)
+    full_name: Mapped[str] = mapped_column(String, nullable=True)
     email: Mapped[str] = mapped_column(String, unique=True)
-    password: Mapped[str] = mapped_column(String)
+    auth0_id: Mapped[str] = mapped_column(String, unique=True, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False)

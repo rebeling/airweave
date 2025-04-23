@@ -51,14 +51,17 @@ function App() {
 
           <Route path="/settings" element={<Settings />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/chat/:chatId?" element={<Chat />} />
-
-          <Route path="*" element={<NotFound />} />
+          <Route path="/chat" element={<Chat />} />
+          <Route path="/chat/:id" element={<Chat />} />
         </Route>
 
+        {/* Public routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/callback" element={<CallbackPage />} />
         <Route path="/auth/callback/:short_name" element={<AuthCallback />} />
+
+        {/* 404 route */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
       <Toaster />
     </>

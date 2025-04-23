@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -49,16 +49,28 @@ function Chat() {
   const [isOpenAIKeySet, setIsOpenAIKeySet] = useState<boolean | null>(null);
   const { resolvedTheme } = useTheme();
   // If you're using a route param like /chat/:chatId
-  const { chatId } = useParams<{ chatId: string }>();
+  const { id } = useParams<{ id: string }>();
+  const chatId = useMemo(() => id, [id]); // Ensure stable reference
 
-  // Check for chatId and load first chat if needed
+  // Add a new state to track if chat is ready for messages
+  const [chatReady, setChatReady] = useState(false);
+
+  // Consolidate useEffects to reduce network calls on page refresh
   useEffect(() => {
-    async function initializeChat() {
+    const checkOpenAIKeyAndInitChats = async () => {
       try {
-        // Use the same endpoint as ChatSidebar
+        // Check OpenAI key first
+        const keyResponse = await apiClient.get('/chat/openai_key_set');
+        const isSet = await keyResponse.json();
+        setIsOpenAIKeySet(isSet);
+
+        if (!isSet) return;
+
+        // Only continue if the key is set
         const response = await apiClient.get('/chat');
         const chats = await response.json();
 
+        // Handle existing chats or create dialog logic
         if (chats && chats.length > 0) {
           // If we don't have a chatId, navigate to the most recent chat
           if (!chatId) {
@@ -71,46 +83,104 @@ function Chat() {
           // Only show create dialog if there are no chats AND no chatId
           setShowCreateDialog(true);
         }
+
+        setIsLoading(false);
       } catch (error) {
-        console.error("Failed to initialize chat:", error);
+        console.error("Failed to initialize:", error);
         toast({
           title: "Error",
-          description: "Failed to load chats. Please try again.",
+          description: "Failed to initialize chat. Please try again.",
           variant: "destructive",
         });
-      } finally {
         setIsLoading(false);
       }
-    }
+    };
 
-    void initializeChat();
+    void checkOpenAIKeyAndInitChats();
   }, [chatId, navigate, toast]);
 
-  // Load chat data on mount or when chatId changes
+  // Single useEffect for loading chat data when chatId changes
   useEffect(() => {
-    async function loadChat() {
-      if (!chatId) return;
+    async function loadChatAndInfo() {
+      if (!chatId) {
+        console.log("No chat ID available, skipping data load");
+        return;
+      }
+
       try {
         setIsLoading(true);
+        setChatReady(false); // Reset chat ready state during loading
         setError(null);
-        const resp = await apiClient.get(`/chat/${chatId}`);
 
+        console.log(`Loading chat data for ID: ${chatId}`);
+
+        // Load chat messages
+        const resp = await apiClient.get(`/chat/${chatId}`);
         if (!resp.ok) {
           throw new Error(`Failed to load chat: ${resp.statusText}`);
         }
 
-        // Handle the response data directly
         const chatData = await resp.json();
 
-        // Ensure messages is an array, even if empty
+        // Set messages
         const messages = chatData.messages || [];
-
         setMessages(messages.map((m: any) => ({
           role: m.role || 'user',
           content: m.content,
           attachments: m.attachments || [],
           id: m.id || Date.now(),
         })));
+
+        // Load chat info in the same effect
+        try {
+          // Get sync info
+          const syncResponse = await apiClient.get(`/sync/${chatData.sync_id}`);
+          const syncData = await syncResponse.json();
+
+          // Get source connection
+          const sourceConnResponse = await apiClient.get(`/connections/detail/${syncData.source_connection_id}`);
+          const sourceConnData = await sourceConnResponse.json();
+
+          // Get source details
+          const sourceResponse = await apiClient.get(`/sources/detail/${sourceConnData.short_name}`);
+          const sourceData = await sourceResponse.json();
+
+          // Get destination connection and details if exists
+          let destinationConnData = null;
+          let destinationData = null;
+
+          if (syncData.destination_connection_id) {
+            const destConnResponse = await apiClient.get(`/connections/detail/${syncData.destination_connection_id}`);
+            destinationConnData = await destConnResponse.json();
+
+            const destResponse = await apiClient.get(`/destinations/detail/${destinationConnData.short_name}`);
+            destinationData = await destResponse.json();
+          }
+
+          // Combine all the data
+          setChatInfo({
+            ...chatData,
+            sync: {
+              ...syncData,
+              source_connection: {
+                ...sourceConnData,
+                source: sourceData
+              },
+              destination_connection: destinationConnData ? {
+                ...destinationConnData,
+                destination: destinationData
+              } : null
+            }
+          });
+
+          // Set chat as ready after successful loading
+          setChatReady(true);
+        } catch (error) {
+          console.error("Failed to load chat info:", error);
+          // Continue even if chat info fails to load, but still mark as ready
+          setChatReady(true);
+        }
+
       } catch (error) {
         console.error("Failed to load chat:", error);
         setError(error.message || "Failed to load chat. Please try again.");
@@ -127,7 +197,8 @@ function Chat() {
         setIsLoading(false);
       }
     }
-    void loadChat();
+
+    void loadChatAndInfo();
   }, [chatId, navigate, toast]);
 
   // Auto-run if user came here with an initial message or sources
@@ -144,7 +215,26 @@ function Chat() {
   // Submit a message via SSE endpoint
   const handleSubmit = useCallback(
     async (content: string, attachments: string[]) => {
-      if (!chatId) return;
+      // Make sure we have a chatId and the chat is ready before sending
+      if (!chatId) {
+        console.error("Chat ID is missing, can't send message");
+        toast({
+          title: "Error",
+          description: "Unable to send message (no chat ID found)",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!chatReady) {
+        console.error("Chat not ready yet, can't send message");
+        toast({
+          title: "Error",
+          description: "Please wait until chat is fully loaded",
+          variant: "destructive",
+        });
+        return;
+      }
 
       try {
         // Add user message
@@ -171,8 +261,16 @@ function Chat() {
           role: "user",
         });
 
-        // Start stream
-        const eventSource = new EventSource(`${API_CONFIG.baseURL}/chat/${chatId}/stream`);
+        // Get the current auth token
+        const token = await apiClient.getToken();
+
+        // Start stream with token as query parameter - properly encode the token
+        const streamUrl = token
+          ? `${API_CONFIG.baseURL}/chat/${chatId}/stream?token=${encodeURIComponent(token)}`
+          : `${API_CONFIG.baseURL}/chat/${chatId}/stream`;
+
+        console.log(`Starting SSE connection to: ${streamUrl}`);
+        const eventSource = new EventSource(streamUrl);
 
         eventSource.onmessage = (event) => {
           if (event.data === '[DONE]' || event.data === '[ERROR]') {
@@ -197,6 +295,29 @@ function Chat() {
         eventSource.onerror = (error) => {
           console.error('EventSource failed:', error);
           eventSource.close();
+
+          // Check if this is an authentication error
+          if (error instanceof ErrorEvent) {
+            // Update the last message with an error notice
+            setMessages(prev => {
+              const newMessages = [...prev];
+              if (newMessages.length > 0) {
+                const lastMessage = newMessages[newMessages.length - 1];
+                if (lastMessage.role === 'assistant') {
+                  if (!lastMessage.content) {
+                    // Only update if we haven't received any content yet
+                    newMessages[newMessages.length - 1] = {
+                      ...lastMessage,
+                      content: "Failed to authenticate the streaming connection. Please try refreshing the page.",
+                      id: Date.now()
+                    };
+                  }
+                }
+              }
+              return newMessages;
+            });
+          }
+
           toast({
             title: "Error",
             description: "Failed to get response",
@@ -215,7 +336,7 @@ function Chat() {
         setIsLoading(false);
       }
     },
-    [chatId, toast]
+    [chatId, chatReady, toast]
   );
 
   const handleSourceChange = (sourceId: string) => {
@@ -227,62 +348,6 @@ function Chat() {
     });
   };
 
-  useEffect(() => {
-    if (chatId) {
-      void loadChatInfo();
-    }
-  }, [chatId]);
-
-  const loadChatInfo = async () => {
-    try {
-      // Get chat info
-      const chatResponse = await apiClient.get(`/chat/${chatId}`);
-      const chatData = await chatResponse.json();
-
-      // Get sync info
-      const syncResponse = await apiClient.get(`/sync/${chatData.sync_id}`);
-      const syncData = await syncResponse.json();
-
-      // Get source connection
-      const sourceConnResponse = await apiClient.get(`/connections/detail/${syncData.source_connection_id}`);
-      const sourceConnData = await sourceConnResponse.json();
-
-      // Get source details
-      const sourceResponse = await apiClient.get(`/sources/detail/${sourceConnData.short_name}`);
-      const sourceData = await sourceResponse.json();
-
-      // Get destination connection and details if exists
-      let destinationConnData = null;
-      let destinationData = null;
-
-      if (syncData.destination_connection_id) {
-        const destConnResponse = await apiClient.get(`/connections/detail/${syncData.destination_connection_id}`);
-        destinationConnData = await destConnResponse.json();
-
-        const destResponse = await apiClient.get(`/destinations/detail/${destinationConnData.short_name}`);
-        destinationData = await destResponse.json();
-      }
-
-      // Combine all the data
-      setChatInfo({
-        ...chatData,
-        sync: {
-          ...syncData,
-          source_connection: {
-            ...sourceConnData,
-            source: sourceData
-          },
-          destination_connection: destinationConnData ? {
-            ...destinationConnData,
-            destination: destinationData
-          } : null
-        }
-      });
-    } catch (error) {
-      console.error("Failed to load chat info:", error);
-    }
-  };
-
   const handleUpdateSettings = async (settings: Partial<ModelSettings>) => {
     if (!chatId) return;
 
@@ -291,7 +356,20 @@ function Chat() {
     });
 
     if (response.ok) {
-      await loadChatInfo();
+      // Refresh chat info after updating settings
+      try {
+        const chatResponse = await apiClient.get(`/chat/${chatId}`);
+        const chatData = await chatResponse.json();
+
+        if (chatInfo) {
+          setChatInfo({
+            ...chatInfo,
+            ...chatData
+          });
+        }
+      } catch (error) {
+        console.error("Failed to refresh chat info after settings update:", error);
+      }
     } else {
       toast({
         title: "Error",
@@ -312,22 +390,6 @@ function Chat() {
       setShowCreateDialog(true);
     }
   }, [location.state]);
-
-  // Add this effect at the top of other effects
-  useEffect(() => {
-    async function checkOpenAIKey() {
-      try {
-        const response = await apiClient.get('/chat/openai_key_set');
-        const isSet = await response.json();
-        setIsOpenAIKeySet(isSet);
-      } catch (error) {
-        console.error("Failed to check OpenAI key:", error);
-        setIsOpenAIKeySet(false);
-      }
-    }
-
-    void checkOpenAIKey();
-  }, []);
 
   // Add this dialog component before the main return
   if (isOpenAIKeySet === false) {

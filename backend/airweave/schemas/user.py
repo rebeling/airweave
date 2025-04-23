@@ -11,7 +11,7 @@ class UserBase(BaseModel):
 
     email: EmailStr
     full_name: Optional[str] = "Superuser"
-    organization_id: UUID
+    organization_id: Optional[UUID] = None
 
     class Config:
         """Pydantic config for UserBase."""
@@ -22,8 +22,6 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     """Schema for creating a User object."""
-
-    password: str
 
 
 class UserUpdate(UserBase):

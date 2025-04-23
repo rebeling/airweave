@@ -48,6 +48,10 @@ class Settings(BaseSettings):
     FIRST_SUPERUSER: str
     FIRST_SUPERUSER_PASSWORD: str
 
+    AUTH_ENABLED: bool = False
+    AUTH0_DOMAIN: str
+    AUTH0_AUDIENCE: str
+
     ENCRYPTION_KEY: str
 
     POSTGRES_HOST: str

@@ -34,7 +34,9 @@ export const LoginPage = () => {
     // Use explicit config to ensure correct values are used
     loginWithRedirect({
       authorizationParams: {
-        redirect_uri: window.location.origin + '/callback'
+        redirect_uri: window.location.origin + '/callback',
+        audience: authConfig.auth0.audience,
+        scope: "openid profile email"
       }
     });
   };
