@@ -112,6 +112,23 @@ class OracleAuthConfig(BaseDatabaseAuthConfig):
     """Oracle authentication configuration."""
 
 
+class ElasticsearchAuthConfig(AuthConfig):
+    """Elasticsearch authentication credentials schema."""
+
+    host: str = Field(title="Host", description="The host of the elasticsearch database")
+    port: int = Field(title="Port", description="The port of the elasticsearch database")
+    indices: str = Field(
+        default="*",
+        title="Indices",
+        description="Comma separated list of indices to sync. Use '*' for all indices.",
+    )
+    fields: Field(
+        default="*",
+        title="Fields",
+        description="List of fields to sync from each document. For all fields, use '*'",
+    )
+
+
 # Destination auth configs
 class WeaviateAuthConfig(AuthConfig):
     """Weaviate authentication credentials schema."""
