@@ -48,10 +48,10 @@ class Settings(BaseSettings):
     FIRST_SUPERUSER: str
     FIRST_SUPERUSER_PASSWORD: str
 
-    AUTH_ENABLED: bool = False
-    AUTH0_DOMAIN: str = None
-    AUTH0_AUDIENCE: str = None
-    AUTH0_RULE_NAMESPACE: str = None
+    AUTH_ENABLED: Optional[bool] = False
+    AUTH0_DOMAIN: Optional[str] = None
+    AUTH0_AUDIENCE: Optional[str] = None
+    AUTH0_RULE_NAMESPACE: Optional[str] = None
 
     ENCRYPTION_KEY: str
 
