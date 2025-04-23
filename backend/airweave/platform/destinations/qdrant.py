@@ -11,7 +11,8 @@ from airweave.platform.auth.schemas import AuthType
 from airweave.platform.configs.auth import QdrantAuthConfig
 from airweave.platform.decorators import destination
 from airweave.platform.destinations._base import VectorDBDestination
-from airweave.platform.entities._base import BaseEmbeddingModel, ChunkEntity
+from airweave.platform.embedding_models._base import BaseEmbeddingModel
+from airweave.platform.entities._base import ChunkEntity
 
 
 @destination("Qdrant", "qdrant", AuthType.config_class, "QdrantAuthConfig", labels=["Vector"])
