@@ -1,12 +1,12 @@
 import React, { useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import App from "./App";
-import "./index.css";
-import { ThemeProvider } from "./lib/theme-provider";
-import { Auth0ProviderWithNavigation } from "./lib/auth0-provider";
-import { AuthProvider, useAuth } from "./lib/auth-context";
-import { setTokenProvider } from "./lib/api";
+import App from "@/App";
+import "@/index.css";
+import { ThemeProvider } from "@/lib/theme-provider";
+import { Auth0ProviderWithNavigation } from "@/lib/auth0-provider";
+import { AuthProvider, useAuth } from "@/lib/auth-context";
+import { setTokenProvider } from "@/lib/api";
 
 // Component to initialize the API with auth
 function ApiAuthConnector({ children }: { children: React.ReactNode }) {

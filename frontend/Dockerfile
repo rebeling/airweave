@@ -1,27 +1,32 @@
-FROM node:20-alpine
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies with npm ci for consistent builds
-RUN npm install && npm ci
+# Install dependencies
+RUN npm ci
 
 # Copy application code
 COPY . .
 
-# Fix for module resolution during build
-ENV NODE_PATH=/app/src
-
-# Build the application
+# Build the application in production mode
 RUN npm run build
 
-# Use serve to serve the static content
+# Runtime stage
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install serve for hosting the built app
 RUN npm install -g serve
 
-# Copy entrypoint script to standard location and make executable
+# Copy built app from builder stage
+COPY --from=builder /app/dist /app/dist
 COPY docker-entrypoint.sh /usr/local/bin/
+
+# Make entrypoint executable
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Use entrypoint script for runtime configuration
