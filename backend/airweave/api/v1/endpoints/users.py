@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from airweave import crud, schemas
 from airweave.api import deps
 from airweave.api.auth import auth0
+from airweave.core.logging import logger
 from airweave.schemas import User
 
 router = APIRouter()
@@ -59,6 +60,7 @@ async def create_or_update_user(
         HTTPException: If the user is not authorized to create this user.
     """
     if user_data.email != auth0_user.email:
+        logger.error(f"User {user_data.email} is not authorized to create user {auth0_user.email}")
         raise HTTPException(
             status_code=403,
             detail="You are not authorized to create this user.",
