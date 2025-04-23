@@ -11,7 +11,6 @@ from airweave.platform.auth.schemas import AuthType
 from airweave.platform.configs.auth import QdrantAuthConfig
 from airweave.platform.decorators import destination
 from airweave.platform.destinations._base import VectorDBDestination
-from airweave.platform.embedding_models._base import BaseEmbeddingModel
 from airweave.platform.entities._base import ChunkEntity
 
 
@@ -389,12 +388,3 @@ class QdrantDestination(VectorDBDestination):
             str: The sanitized collection name.
         """
         return str(collection_name).replace("-", "_")
-
-    async def configure_for_embedding_model(self, embedding_model: BaseEmbeddingModel) -> None:
-        """Configure Qdrant for the specified embedding model.
-
-        Args:
-            embedding_model: The embedding model to use
-        """
-        self.vector_size = embedding_model.vector_dimensions
-        logger.info(f"Configured Qdrant with vector size {self.vector_size}")

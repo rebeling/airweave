@@ -12,7 +12,7 @@ from airweave.core.config import settings
 from airweave.core.exceptions import NotFoundException
 from airweave.platform.auth.schemas import AuthType
 from airweave.platform.auth.services import oauth2_service
-from airweave.platform.destinations._base import BaseDestination
+from airweave.platform.destinations._base import BaseDestination, VectorDBDestination
 from airweave.platform.embedding_models._base import BaseEmbeddingModel
 from airweave.platform.embedding_models.local_text2vec import LocalText2Vec
 from airweave.platform.embedding_models.openai_text2vec import OpenAIText2Vec
@@ -296,14 +296,13 @@ class SyncContextFactory:
                     f"Destination not found for connection {destination_connection.short_name}"
                 )
 
-            # Create the destination with just the sync_id
-            destination = await resource_locator.get_destination(destination_schema).create(
-                sync_id=sync.id
-            )
-
-            # Configure for embedding model if it's a vector destination
-            if hasattr(destination, "configure_for_embedding_model"):
-                await destination.configure_for_embedding_model(embedding_model)
+            destination_class = resource_locator.get_destination(destination_schema)
+            if issubclass(destination_class, VectorDBDestination):
+                destination = destination_class.create(
+                    sync_id=sync.id, vector_size=embedding_model.vector_dimensions
+                )
+            else:
+                destination = destination_class.create(sync_id=sync.id)
 
             destinations.append(destination)
 
