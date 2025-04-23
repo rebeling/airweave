@@ -298,11 +298,11 @@ class SyncContextFactory:
 
             destination_class = resource_locator.get_destination(destination_schema)
             if issubclass(destination_class, VectorDBDestination):
-                destination = destination_class.create(
+                destination = await destination_class.create(
                     sync_id=sync.id, vector_size=embedding_model.vector_dimensions
                 )
             else:
-                destination = destination_class.create(sync_id=sync.id)
+                destination = await destination_class.create(sync_id=sync.id)
 
             destinations.append(destination)
 
