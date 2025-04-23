@@ -26,7 +26,7 @@ else:
             self.jwks = {"keys": []}
             self.auth0_user_model = Auth0User
 
-        async def get_user(self, security_scopes, creds=None):
+        async def get_user(self, creds=None):
             """Always return a mock user in development mode."""
             # For development and testing
             return Auth0User(sub="mock-user-id", email=settings.FIRST_SUPERUSER)

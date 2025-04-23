@@ -32,25 +32,28 @@ async def get_user_from_token_param(
     Raises:
         HTTPException: If authentication fails.
     """
-    token = request.query_params.get("token")
-    if not token:
-        logger.warning("SSE connection attempt without token")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing authentication token"
-        )
+    if settings.AUTH_ENABLED:
+        token = request.query_params.get("token")
+        if not token:
+            logger.warning("SSE connection attempt without token")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing authentication token"
+            )
 
-    # Use the same auth logic from get_user but with the token from query param
-    from airweave.api.deps import get_user_from_token
+        # Use the same auth logic from get_user but with the token from query param
+        from airweave.api.deps import get_user_from_token
 
-    user = await get_user_from_token(token, db)
-    if not user:
-        logger.warning(f"SSE connection with invalid token: {token[:10]}...")
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authentication token"
-        )
+        user = await get_user_from_token(token, db)
+        if not user:
+            logger.warning(f"SSE connection with invalid token: {token[:10]}...")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authentication token"
+            )
 
-    logger.info(f"SSE connection authenticated for user: {user.id}")
-    return user
+        logger.info(f"SSE connection authenticated for user: {user.id}")
+        return user
+    else:
+        return await get_user(db=db)
 
 
 @router.get("/openai_key_set", response_model=bool)

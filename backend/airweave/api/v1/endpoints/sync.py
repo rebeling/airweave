@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from airweave import crud, schemas
 from airweave.api import deps
+from airweave.core.config import settings
 from airweave.core.logging import logger
 from airweave.db.unit_of_work import UnitOfWork
 from airweave.platform.sync.pubsub import sync_pubsub
@@ -285,20 +286,22 @@ async def subscribe_sync_job(
         StreamingResponse: The streaming response
     """
     # Get auth token from query parameter
-    token = request.query_params.get("token")
-    if not token:
-        logger.warning("SSE connection attempt without token")
-        raise HTTPException(status_code=401, detail="Missing authentication token")
 
-    # Authenticate the user from token parameter
-    from airweave.api.deps import get_user_from_token
+    if settings.AUTH_ENABLED:
+        token = request.query_params.get("token")
+        if not token:
+            logger.warning("SSE connection attempt without token")
+            raise HTTPException(status_code=401, detail="Missing authentication token")
 
-    user = await get_user_from_token(token, db)
-    if not user:
-        logger.warning(f"SSE connection with invalid token: {token[:10]}...")
-        raise HTTPException(status_code=401, detail="Invalid authentication token")
+        # Authenticate the user from token parameter
+        from airweave.api.deps import get_user_from_token
 
-    logger.info(f"SSE sync subscription authenticated for user: {user.id}, job: {job_id}")
+        user = await get_user_from_token(token, db)
+        if not user:
+            logger.warning(f"SSE connection with invalid token: {token[:10]}...")
+            raise HTTPException(status_code=401, detail="Invalid authentication token")
+
+        logger.info(f"SSE sync subscription authenticated for user: {user.id}, job: {job_id}")
 
     queue = await sync_pubsub.subscribe(job_id)
 
