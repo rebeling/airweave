@@ -7,7 +7,7 @@ from fastapi_auth0 import Auth0User
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from airweave import crud, schemas
-from airweave.api.auth import auth0, get_auth0_user_from_token
+from airweave.api.auth import auth0
 from airweave.core.config import settings
 from airweave.core.exceptions import NotFoundException
 from airweave.core.logging import logger
@@ -41,7 +41,7 @@ async def get_user(
     if auth0_user:
         user = await crud.user.get_by_email(db, email=auth0_user.email)
     else:
-        user = await crud.user.get_by_email(db, email=settings.FIRST_SUPERUSER)
+        raise HTTPException(status_code=401, detail="Auth0 User not found")
     return schemas.User.model_validate(user)
 
 
@@ -94,8 +94,15 @@ async def get_user_from_token(token: str, db: AsyncSession) -> Optional[schemas.
         if token.startswith("Bearer "):
             token = token[7:]
 
-        # Get the auth0 user from the token
-        auth0_user = await get_auth0_user_from_token(token)
+        # If auth is disabled, just use the first superuser
+        if not settings.AUTH_ENABLED:
+            user = await crud.user.get_by_email(db, email=settings.FIRST_SUPERUSER)
+            return schemas.User.model_validate(user)
+
+        # Get user ID from the token using the auth module
+        from airweave.api.auth import get_user_from_token as auth_get_user
+
+        auth0_user = await auth_get_user(token)
         if not auth0_user:
             return None
 
