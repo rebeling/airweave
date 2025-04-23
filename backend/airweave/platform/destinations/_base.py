@@ -62,8 +62,12 @@ class BaseDestination(ABC):
 
 
 class VectorDBDestination(BaseDestination):
-    """Base class for vector database destinations."""
+    """Abstract base class for destinations backed by a vector database.
 
+    Inherits from BaseDestination and can have additional vector-specific methods if necessary.
+    """
+
+    # For now, no additional abstract methods are defined here; it uses BaseDestination's interface.
     pass
 
 
