@@ -37,9 +37,9 @@ def generate_openapi():
             "x-fern-server-name": "Production",
         },
         {
-            "url": "https://api.dev-airweave.com",
-            "description": "Development",
-            "x-fern-server-name": "Development",
+            "url": "http://localhost:8001",
+            "description": "Local",
+            "x-fern-server-name": "Local",
         },
     ]
 
