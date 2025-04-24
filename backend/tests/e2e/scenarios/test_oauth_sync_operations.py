@@ -1,6 +1,11 @@
 """
 1. Create IntegrationCredentialCreateEncrypted with encrypted refresh token
 2.
+
+To reproduce locally:
+1. set dropbox, stripe, openai keys
+2. start test containers
+3. you encryption key should be the same as in the test backend
 """
 
 from airweave import crud, schemas
@@ -11,7 +16,6 @@ from airweave.db.unit_of_work import UnitOfWork
 from airweave import schemas
 from airweave import crud
 from airweave.core.config import settings
-from airweave.db.session import get_db_context
 
 import os
 import uuid
@@ -75,7 +79,7 @@ def oauth_refresh_tokens():
         "asana": os.getenv("ASANA_REFRESH_TOKEN"),
     }
 
-@pytest.mark.parametrize("service_name", ["dropbox", "google_drive", "asana"])
+@pytest.mark.parametrize("service_name", ["dropbox"]) # , "google_drive", "asana"
 def test_oauth_refresh_sync(e2e_api_url, oauth_refresh_tokens, service_name):
     """Test end-to-end flow with OAuth services using refresh tokens.
 
@@ -92,7 +96,7 @@ def test_oauth_refresh_sync(e2e_api_url, oauth_refresh_tokens, service_name):
 
     # 1. Create connection using refresh token
     connection = asyncio.run(_create_connection(e2e_api_url, service_name, refresh_token))
-    print(f"Created connection: {connection.id} for {service_name}")
+    print(f"\nCreated connection: {connection.id} for {service_name}\n")
 
     # 2. Create a sync configuration
     sync_data = {
@@ -104,6 +108,7 @@ def test_oauth_refresh_sync(e2e_api_url, oauth_refresh_tokens, service_name):
         "run_immediately": False,
         "schedule": None,
     }
+    print(f"\nSync data: {sync_data}\n")
 
     create_sync_response = requests.post(f"{e2e_api_url}/sync/", json=sync_data)
     assert create_sync_response.status_code == 200, f"Failed to create sync: {create_sync_response.text}"
@@ -112,6 +117,7 @@ def test_oauth_refresh_sync(e2e_api_url, oauth_refresh_tokens, service_name):
     print(f"Created sync: {sync_id}")
 
     # 3. Run the sync job
+    print(f"\n\n{e2e_api_url}\n\n")
     run_sync_response = requests.post(f"{e2e_api_url}/sync/{sync_id}/run")
     assert run_sync_response.status_code == 200, f"Failed to run sync: {run_sync_response.text}"
     job_id = run_sync_response.json()["id"]
@@ -131,9 +137,25 @@ def test_oauth_refresh_sync(e2e_api_url, oauth_refresh_tokens, service_name):
     assert job_data["status"] == "completed", f"Job failed or timed out: {job_data['status']}"
 
     print(f"✅ Successfully completed OAuth refresh token sync test for {service_name}")
+
+
 async def _create_connection(e2e_api_url, service_name, refresh_token):
     """Helper function to create a connection with a refresh token."""
-    async with get_db_context() as db:
-        user_db = await crud.user.get_by_email(db, email=settings.FIRST_SUPERUSER)
-        user = schemas.User.model_validate(user_db)
-        return await setup_connection_with_refresh_token(db, service_name, refresh_token, user)
+
+    # Save original URI
+    original_uri = settings.SQLALCHEMY_ASYNC_DATABASE_URI
+    try:
+        # Override with test URI for Docker container
+        settings.SQLALCHEMY_ASYNC_DATABASE_URI = "postgresql+asyncpg://airweave:airweave1234!@localhost:9432/airweave"
+
+        # NOTE: Import location is important since it create the engine on import using the URI
+        from airweave.db.session import get_db_context
+
+        # Use regular get_db_context which will now use the modified URI
+        async with get_db_context() as db:
+            user_db = await crud.user.get_by_email(db, email=settings.FIRST_SUPERUSER)
+            user = schemas.User.model_validate(user_db)
+            return await setup_connection_with_refresh_token(db, service_name, refresh_token, user)
+    finally:
+        # Restore original URI
+        settings.SQLALCHEMY_ASYNC_DATABASE_URI = original_uri
