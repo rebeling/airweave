@@ -80,7 +80,7 @@ def oauth_refresh_tokens():
     }
 
 @pytest.mark.parametrize("service_name", ["dropbox"]) # , "google_drive", "asana"
-def test_oauth_refresh_sync(e2e_api_url, oauth_refresh_tokens, service_name):
+def test_oauth_refresh_sync(e2e_environment, e2e_api_url, oauth_refresh_tokens, service_name):
     """Test end-to-end flow with OAuth services using refresh tokens.
 
     This test:
