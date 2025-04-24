@@ -43,9 +43,11 @@ async def get_user(
         user = await crud.user.get_by_email(db, email=settings.FIRST_SUPERUSER)
         return schemas.User.model_validate(user)
 
-    if auth0_user:
+    if auth0_user.email:
         user = await crud.user.get_by_email(db, email=auth0_user.email)
         return schemas.User.model_validate(user)
+
+    raise HTTPException(status_code=401, detail="Unauthorized, no email found in Auth0 user")
 
 
 async def get_user_from_api_key(db: AsyncSession, api_key: str) -> schemas.User:
