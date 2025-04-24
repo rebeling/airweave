@@ -39,6 +39,8 @@ async def get_user(
 
     """
     # For test environments or when auth is disabled, use the first superuser
+    logger.info(f"AUTH_ENABLED: {settings.AUTH_ENABLED}")
+    logger.info(f"auth0_user: {auth0_user}")
     if not settings.AUTH_ENABLED or auth0_user is None:
         user = await crud.user.get_by_email(db, email=settings.FIRST_SUPERUSER)
         return schemas.User.model_validate(user)
