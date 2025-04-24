@@ -66,14 +66,14 @@ function Chat() {
     const checkOpenAIKeyAndInitChats = async () => {
       try {
         // Check OpenAI key first
-        const keyResponse = await apiClient.get('/chat/openai_key_set/');
+        const keyResponse = await apiClient.get('/chat/openai_key_set');
         const isSet = await keyResponse.json();
         setIsOpenAIKeySet(isSet);
 
         if (!isSet) return;
 
         // Only continue if the key is set
-        const response = await apiClient.get('/chat/');
+        const response = await apiClient.get('/chat');
         const chats = await response.json();
 
         // Handle existing chats or create dialog logic

@@ -52,12 +52,7 @@ async def lifespan(app: FastAPI):
     await platform_scheduler.stop()
 
 
-app = FastAPI(
-    title=settings.PROJECT_NAME,
-    openapi_url="/openapi.json",
-    lifespan=lifespan,
-    redirect_slashes=False,
-)
+app = FastAPI(title=settings.PROJECT_NAME, openapi_url="/openapi.json", lifespan=lifespan)
 
 app.include_router(api_router)
 
