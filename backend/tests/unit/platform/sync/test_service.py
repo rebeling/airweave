@@ -94,7 +94,7 @@ class TestSyncServiceRun:
 
             # Mock SyncContextFactory.create
             with patch(
-                "airweave.platform.sync.service.SyncContextFactory.create"
+                "airweave.core.sync_service.SyncContextFactory.create"
             ) as mock_create_context:
                 mock_create_context.return_value = mock_sync_context
 
