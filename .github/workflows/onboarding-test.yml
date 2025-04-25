@@ -27,7 +27,7 @@ jobs:
       - name: Run start script
         run: |
           chmod +x start.sh
-          { echo "y"; echo "${{ secrets.OPENAI_API_KEY }}"; } | ./start.sh
+          { echo "y"; echo "${{ secrets.OPENAI_API_KEY }}"; echo "n"; echo "y"; } | ./start.sh
 
       - name: Run backend-specific health checks
         run: |

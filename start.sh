@@ -66,6 +66,29 @@ else
     echo "MISTRAL_API_KEY=\"your-api-key-here\""
 fi
 
+# Ask for AUTH_ENABLED setting
+echo ""
+echo "AUTH_ENABLED determines whether authentication is required for API calls."
+read -p "Would you like to disable authentication for testing? (y/n): " DISABLE_AUTH
+
+if [ "$DISABLE_AUTH" = "y" ] || [ "$DISABLE_AUTH" = "Y" ]; then
+    # Remove any existing AUTH_ENABLED line
+    grep -v "^AUTH_ENABLED=" .env > .env.tmp
+    mv .env.tmp .env
+
+    # Add AUTH_ENABLED=false
+    echo "AUTH_ENABLED=false" >> .env
+    echo "Authentication disabled in .env file."
+else
+    # Remove any existing AUTH_ENABLED line
+    grep -v "^AUTH_ENABLED=" .env > .env.tmp
+    mv .env.tmp .env
+
+    # Set AUTH_ENABLED to true
+    echo "AUTH_ENABLED=true" >> .env
+    echo "Authentication enabled in .env file."
+fi
+
 # Check if "docker compose" is available (Docker Compose v2)
 if docker compose version >/dev/null 2>&1; then
   COMPOSE_CMD="docker compose"
