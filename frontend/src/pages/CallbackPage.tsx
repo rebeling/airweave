@@ -38,15 +38,25 @@ export const CallbackPage = () => {
             return;
           }
 
+          // Add console logs to debug the email values
+          if (user) {
+            console.log("Auth0 user object:", user);
+            console.log("Auth0 user email:", user.email);
+            console.log("Auth0 user ID (sub):", user.sub);
+          }
+
           // Extract relevant user data from Auth0 user object
           const userData = {
             email: user.email,
-            name: user.name,
-            picture: user.picture,
-            auth0_id: user.sub,
-            email_verified: user.email_verified,
+            full_name: user.name,
+            // picture: user.picture,
+            // auth0_id: user.sub,
+            // email_verified: user.email_verified,
             // Add any other fields you want to store
           };
+
+          // Optional: Log the data being sent to the backend
+          console.log("Data being sent to backend:", userData);
 
           // Call backend API to create or update user
           const response = await apiClient.post('/users/create_or_update', userData);
